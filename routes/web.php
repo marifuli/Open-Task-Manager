@@ -9,6 +9,7 @@ use App\Http\Controllers\ProjectFileController;
 use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,9 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(MailController::class)->prefix('mail')->name('mail.')->group(function () {
         Route::get('/', 'index')->name('inbox');
     });
+
+    Route::resource('users', UserController::class);
+
     Route::resource('projects', ProjectController::class);
     Route::post('project/team', [ProjectController::class, 'addMember'])->name('projects.addMember');
     Route::get('projects/{project}/tasks', [TaskController::class, 'index'])->name('projects.tasks.index');

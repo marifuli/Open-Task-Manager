@@ -151,6 +151,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link {{ request()->is('users*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                    <i class="bi bi-people"></i> Teammates
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link {{ request()->is('files*') ? 'active' : '' }}" href="{{ route('files.index') }}">
                     <i class="bi bi-file"></i> Files
                 </a>
