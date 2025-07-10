@@ -47,4 +47,10 @@ class Task extends Model
     {
         return $this->hasMany(ChecklistItem::class);
     }
+
+
+    public function taskStatus()
+    {
+        return $this->belongsTo(TaskStatus::class, 'task_status_id');
+    }
 }
