@@ -1,10 +1,10 @@
 @extends('layouts.app')
 @section('title')
-    {{ $project->name }} Edit Project
+    {{ $user->name }}
 @endsection
 @section('content')
     <div class="container">
-        <h2 class="mb-4 shadow-sm p-3 rounded bg-white">Edit Project</h2>
+        <h2 class="mb-4 shadow-sm p-3 rounded bg-white">Edit User</h2>
         <div class="card border-0 shadow-sm m-auto" style="max-width: 600px;">
             <div class="card-body">
                 <form action="{{ route('users.update', $user->id) }}" method="POST">

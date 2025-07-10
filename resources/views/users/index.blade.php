@@ -22,15 +22,7 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ $user->name }}</h5>
                             <p class="card-text">{{ $user->email }}</p>
-                            <p class="card-text">
-                                <strong>Status:</strong> {{ $user->status == 'pending' ? 'Pending' : ($user->status == 'on_going' ? 'In Progress' : 'Completed') }}<br>
-                                <strong>Deadline:</strong> 
-                                @if($user->end_date && $user->end_date->isFuture())
-                                    {{ $user->end_date->diffForHumans() }}
-                                @else
-                                    <span class="text-danger">Deadline Passed</span>
-                                @endif
-                            </p>
+                          
                             <a href="{{ route('projects.tasks.index', $user->id) }}" class="btn btn-primary"> <i class="bi bi-list"></i> </a>
                             <a href="{{ route('users.show', $user->id) }}" class="btn btn-primary"> <i class="bi bi-eye"></i> </a>
                             <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning"> <i class="bi bi-pencil-square"></i> </a>

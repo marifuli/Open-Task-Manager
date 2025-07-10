@@ -1,104 +1,81 @@
 @extends('layouts.app')
+
 @section('title')
-    {{ $project->name }} - Project Details
+    {{ $user->name }} - Profile
 @endsection
+
 @section('content')
-    <div class="container">
-        <h2 class="mb-4 shadow-sm p-3 rounded bg-white text-center"> {{ $project->name }}</h2>
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
 
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-        <div class="row">
-            <div class="col-md-7">
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ $project->name }}</h5>
-                        <p class="card-text">{{ $project->description }}</p>
-                        <p class="card-text"><strong>Start Date:</strong>
-                            {{ \Carbon\Carbon::parse($project->start_date)->format('Y-m-d') }}</p>
-                        <p class="card-text"><strong>End Date:</strong>
-                            {{ \Carbon\Carbon::parse($project->end_date)->format('Y-m-d') }}</p>
-                        <p class="card-text"><strong>Status:</strong>
-                            {{ $project->status == 'pending' ? 'Pending' : ($project->status == 'on_going' ? 'In Progress' : 'Completed') }}
-                        </p>
-                        <p class="card-text"><strong>Budget:</strong> ${{ $project->budget }}</p>
+                @if (session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
 
-                        <h5 class="mt-4">Project Progress</h5>
-                        @php
-                            $totalTasks = $project->tasks->count();
-                            $completedTasks = $project->tasks->where('status', 'completed')->count();
-                            $progress = $totalTasks > 0 ? ($completedTasks / $totalTasks) * 100 : 0;
-                        @endphp
-                        <div class="progress mb-4">
-                            <div class="progress-bar" role="progressbar" style="width: {{ $progress }}%;"
-                                aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100">
-                                {{ round($progress) }}%</div>
-                        </div>
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="row align-items-center">
 
-                        <a href="{{ route('projects.index') }}" class="btn btn-secondary mt-3">Back to Projects</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-5">
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="card-title"> Team Members </h5>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#addMemberModal"> <i class="bi bi-plus-circle"></i> </button>
-                        </div>
+                            {{-- Profile Image --}}
+                            <div class="col-md-3 text-center mb-4 mb-md-0">
+                                <img src="{{ $user->profile_photo_url ?? asset('default-profile.png') }}"
+                                     alt="{{ $user->name }}"
+                                     class="rounded-circle img-thumbnail"
+                                     style="width: 150px; height: 150px; object-fit: cover;">
+                            </div>
 
-                        <div class="row">
-                            @foreach ($teamMembers as $user)
-                                <div class="col-12">
-                                    <div class="card mb-3">
-                                        <div class="row g-0">
-                                            <div class="col-md-12">
-                                                <div class="card-body">
-                                                    <p class="card-title fw-bolder">{{ $user->name }}</p>
-                                                    <p class="card-text">{{ $user->email }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
+                            {{-- Profile Details --}}
+                            <div class="col-md-9">
+                                <h3 class="mb-1">{{ $user->name }}</h3>
+                                <p class="text-muted mb-2">{{ $user->email }}</p>
+
+                                <p><strong>Role:</strong> {{ ucfirst($user->role ?? 'N/A') }}</p>
+                                <p>
+                                    <strong>Status:</strong>
+                                    @if ($user->status === 'active')
+                                        <span class="badge bg-success">Active</span>
+                                    @else
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    @endif
+                                </p>
+                                <p><strong>Joined:</strong> {{ $user->created_at->format('F d, Y') }}</p>
+
+                                @if ($user->description)
+                                    <hr>
+                                    <p><strong>About:</strong><br>{{ $user->description }}</p>
+                                @endif
+
+                                {{-- Edit Profile Button --}}
+                                @if (auth()->user()->id === $user->id || auth()->user()->role === 'admin')
+                                    <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary mt-3">
+                                        <i class="bi bi-pencil-square"></i> Edit Profile
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addMemberModalLabel">Add Team Member</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('projects.addMember')}}" method="POST">
-                        @csrf
-                        <input type="hidden" name="project_id" value="{{ $project->id }}">
-                        <div class="mb-3">
-                            <label for="user_id" class="form-label">Select User</label>
-                            <select class="form-select" name="user_id" id="">
-                                @foreach ($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                {{-- Optional: User's Projects --}}
+                @if (isset($user->projects) && $user->projects->count())
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-header">
+                            <h5>{{ $user->name }}'s Projects</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                @foreach ($user->projects as $project)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ $project->name }}
+                                        <span class="badge bg-primary">{{ ucfirst($project->status) }}</span>
+                                    </li>
                                 @endforeach
-                            </select>
+                            </ul>
                         </div>
+                    </div>
+                @endif
 
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Add Member</button>
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
     </div>

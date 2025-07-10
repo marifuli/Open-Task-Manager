@@ -15,7 +15,8 @@ class Task extends Model
         'description',
         'due_date',
         'priority',
-        'status',
+        'task_status_id',
+        'expected_completion_date'
     ];
 
     public function user()

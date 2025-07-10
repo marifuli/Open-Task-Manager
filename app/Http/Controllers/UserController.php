@@ -76,4 +76,37 @@ class UserController extends Controller
         // Return the view to edit the user
         return view('users.edit', compact('user')); 
     }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, User $user)
+    {
+        // Validate the request data
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'is_admin' => 'boolean',
+        ]);
+        // Update the user
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'is_admin' => $request->is_admin ?? false, // Default to false if not provided
+        ]);
+        // Redirect back with success message
+        return redirect()->route('users.index')->with('success', 'User updated successfully.');
+    }
+
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(User $user)
+    {
+        // Delete the user
+        $user->delete();
+        // Redirect back with success message
+        return redirect()->route('users.index')->with('success', 'User deleted successfully.'); 
+    }
 }
