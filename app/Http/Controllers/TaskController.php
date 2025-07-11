@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskHistory;
 use App\Models\TaskStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +17,7 @@ class TaskController extends Controller
 
         // dd($tasks);
         $users = $project->users()->get();
-        $taskStatuses = TaskStatus::orderBy('order')->get();  
+        $taskStatuses = TaskStatus::orderBy('order')->get();
         return view('tasks.index', compact('project', 'tasks', 'users', 'taskStatuses'));
     }
 
@@ -31,38 +33,88 @@ class TaskController extends Controller
             'task_status_id' => 'required|exists:task_statuses,id',
         ]);
 
-        // dd($formData);
+        $task = $project->tasks()->create($request->all());
 
-        $project->tasks()->create($request->all());
+        // Create task history
+        $taskHistory = TaskHistory::create([
+            'task_id' => $task->id,
+            'action' => 'created',
+        ]);
 
         return redirect()->route('projects.tasks.index', $project)->with('success', 'Task created successfully.');
     }
 
     public function show(Task $task)
     {
-        return view('tasks.show', compact('task'));
+        $statuses = TaskStatus::orderBy('order')->get();
+        return view('tasks.show', compact('task', 'statuses'));
     }
 
     public function update(Request $request, Task $task)
     {
-        $request->validate([
+        $formData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
             'priority' => 'required|in:low,medium,high',
-            'status' => 'required|in:to_do,in_progress,completed',
+            'task_status_id' => 'required|exists:task_statuses,id',
         ]);
 
-        $task->update($request->all());
+        // First assign new values manually (don't save yet)
+        $task->fill($formData);
 
-        return redirect()->route('projects.tasks.index', $task->project_id)->with('success', 'Task updated successfully.');
+        // Now get the changed fields
+        $changedFields = [];
+
+        foreach ($task->getDirty() as $field => $newValue) {
+            $changedFields[$field] = [
+                'old' => $task->getOriginal($field),
+                'new' => $newValue,
+            ];
+        }
+        // dd($changedFields);
+        // Now perform the update
+        $task->save();
+
+        // Save task history only if something changed
+        if (!empty($changedFields)) {
+            TaskHistory::create([
+                'task_id' => $task->id,
+                'action' => 'updated',
+                'changed_field' => $changedFields,
+            ]);
+        }
+
+        return redirect()
+            ->route('projects.tasks.index', $task->project_id)
+            ->with('success', 'Task updated successfully.');
     }
+
 
     public function updateStatus(Request $request, Task $task)
     {
-        // dd($request->all());
-        $task->task_status_id = $request->input('task_status_id');
-        $task->save();
+        $validated = $request->validate([
+            'task_status_id' => 'required|exists:task_statuses,id',
+        ]);
+
+        $oldStatus = $task->task_status_id;
+        $newStatus = $validated['task_status_id'];
+
+        if ($oldStatus != $newStatus) {
+            $task->task_status_id = $newStatus;
+            $task->save();
+
+            TaskHistory::create([
+                'task_id' => $task->id,
+                'changed_field' => [
+                    'task_status_id' => [
+                        'old' => $oldStatus,
+                        'new' => $newStatus,
+                    ],
+                ],
+                'action' => 'status',
+            ]);
+        }
 
         return response()->json(['message' => 'Task status updated successfully.']);
     }

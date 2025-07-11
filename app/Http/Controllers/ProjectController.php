@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\TaskStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,8 @@ class ProjectController extends Controller
 
     public function create()
     {
-        return view('projects.create');
+        $statuses = TaskStatus::orderBy('order')->get();
+        return view('projects.create', compact('statuses'));
     }
 
     public function store(Request $request)

@@ -199,6 +199,14 @@
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
+                             <div class="mb-3">
+                                <label for="expected_completion_date" class="form-label">Expected Date</label>
+                                <input type="date" name="expected_completion_date" id="expected_completion_date"
+                                    class="form-control" value="{{ $task->expected_completion_date }}">
+                                @error('expected_completion_date')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
                             <div class="mb-3">
                                 <label for="priority" class="form-label">Priority</label>
                                 <select name="priority" id="priority" class="form-select" required>
@@ -212,15 +220,15 @@
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label for="status" class="form-label">Status</label>
-                                <select name="status" id="status" class="form-select" required>
-                                    <option value="to_do" {{ $task->status == 'to_do' ? 'selected' : '' }}>To Do</option>
-                                    <option value="in_progress" {{ $task->status == 'in_progress' ? 'selected' : '' }}>In
-                                        Progress</option>
-                                    <option value="completed" {{ $task->status == 'completed' ? 'selected' : '' }}>
-                                        Completed</option>
+                                <label for="task_status_id" class="form-label">Status</label>
+                                <select name="task_status_id" id="task_status_id" class="form-select" required>
+                                    @foreach ($statuses as $status)
+                                        <option value="{{ $status->id }}" {{ $task->taskStatus->id == $status->id ? 'selected' : '' }}>
+                                            {{ $status->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
-                                @error('status')
+                                @error('task_status_id')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
