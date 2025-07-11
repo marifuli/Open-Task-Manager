@@ -94,74 +94,69 @@ class TaskController extends Controller
 
 
     public function updateStatus(Request $request, Task $task)
-    {
-        $validated = $request->validate([
-            'task_status_id' => 'required|exists:task_statuses,id',
+{
+    $validated = $request->validate([
+        'task_status_id' => 'required|exists:task_statuses,id',
+    ]);
+
+    $oldStatus = $task->task_status_id;
+    $newStatus = $validated['task_status_id'];
+
+    // Only continue if the status has changed
+    if ($oldStatus != $newStatus) {
+        $task->task_status_id = $newStatus;
+        $task->save();
+
+        // Log status change
+        TaskHistory::create([
+            'task_id' => $task->id,
+            'changed_field' => [
+                'task_status_id' => [
+                    'old' => $oldStatus,
+                    'new' => $newStatus,
+                ],
+            ],
+            'action' => 'status',
         ]);
 
-        $oldStatus = $task->task_status_id;
-        $newStatus = $validated['task_status_id'];
-
-        if ($oldStatus != $newStatus) {
-            $task->task_status_id = $newStatus;
-            $task->save();
-
-            TaskHistory::create([
-                'task_id' => $task->id,
-                'changed_field' => [
-                    'task_status_id' => [
-                        'old' => $oldStatus,
-                        'new' => $newStatus,
-                    ],
-                ],
-                'action' => 'status',
-            ]);
-        }
-
-        // dd($task->task_status_id);
-        if ($task->task_status_id == 9) {
+        // 👉 If transitioning INTO "Completed" (ID 9) from a lower status → evaluate expected date
+        if ($newStatus == 9 && $oldStatus < 9) {
             $currentDate = now();
-
             $expectedCompletionDate = $task->expected_completion_date
                 ? Carbon::parse($task->expected_completion_date)
                 : null;
 
             if ($expectedCompletionDate) {
-                $diffInHours = $expectedCompletionDate->diffInHours($currentDate, false); // false = allow negative
+                $currentDateOnly = $currentDate->copy()->startOfDay();
+                $expectedDateOnly = $expectedCompletionDate->copy()->startOfDay();
 
-                // Set default points and reason
                 $points = 0;
                 $reason = 'Task completed exactly on expected date';
 
-                if ($diffInHours < 0) {
-                    // Completed early → reward
+                if ($currentDateOnly->lt($expectedDateOnly)) {
+                    $diffInHours = $expectedCompletionDate->diffInHours($currentDate, false);
                     $points = abs($diffInHours);
                     $reason = 'Task completed before expected date';
-                } elseif ($diffInHours > 0) {
-                    // Completed late → penalty
+                } elseif ($currentDateOnly->gt($expectedDateOnly)) {
+                    $diffInHours = $expectedCompletionDate->diffInHours($currentDate, false);
                     $points = -$diffInHours;
                     $reason = 'Task completed after expected date';
                 }
 
-                // Always create or get the monthly point record
                 $userPoint = UserPoint::firstOrCreate(
                     [
                         'user_id' => $task->user_id,
                         'month' => now()->format('Y-m-01'),
                     ],
-                    [
-                        'points' => 0,
-                    ]
+                    ['points' => 0]
                 );
 
-                // Apply point change only if non-zero
                 if ($points > 0) {
                     $userPoint->increment('points', $points);
                 } elseif ($points < 0) {
                     $userPoint->decrement('points', abs($points));
                 }
 
-                // Log to point history regardless of point amount (optional: skip if 0)
                 $userPoint->histories()->create([
                     'task_id' => $task->id,
                     'points' => $points,
@@ -170,9 +165,33 @@ class TaskController extends Controller
             }
         }
 
+        // 👉 If transitioning OUT OF completed/review/test statuses (IDs 9,10,11,12) → deduct 10 points
+        if (in_array($oldStatus, [9, 10, 11, 12]) && in_array($newStatus, [1, 2, 3, 4, 5, 6, 7, 8])) {
+            $penaltyPoints = 10;
+            $penaltyReason = 'Task regressed after completion/review';
 
-        return response()->json(['message' => 'Task status updated successfully.']);
+            $userPoint = UserPoint::firstOrCreate(
+                [
+                    'user_id' => $task->user_id,
+                    'month' => now()->format('Y-m-01'),
+                ],
+                ['points' => 0]
+            );
+
+            $userPoint->decrement('points', $penaltyPoints);
+
+            $userPoint->histories()->create([
+                'task_id' => $task->id,
+                'points' => -$penaltyPoints,
+                'reason' => $penaltyReason,
+            ]);
+        }
     }
+
+    return response()->json(['message' => 'Task status updated successfully.']);
+}
+
+
 
 
     // user points update section
