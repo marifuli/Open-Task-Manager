@@ -8,4 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class UserPoint extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'points',
+        'month',
+    ];
+
+    public function histories()
+    {
+        return $this->hasMany(PointHistory::class);
+    }
 }

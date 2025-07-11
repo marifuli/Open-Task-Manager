@@ -6,8 +6,10 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskHistory;
 use App\Models\TaskStatus;
+use App\Models\UserPoint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class TaskController extends Controller
 {
@@ -116,6 +118,99 @@ class TaskController extends Controller
             ]);
         }
 
+        // dd($task->task_status_id);
+        if ($task->task_status_id == 11) {
+            $currentDate = now();
+
+            $expectedCompletionDate = $task->expected_completion_date
+                ? Carbon::parse($task->expected_completion_date)
+                : null;
+
+            if ($expectedCompletionDate) {
+                $diffInHours = $expectedCompletionDate->diffInHours($currentDate, false); // false = allow negative
+
+                // Set default points and reason
+                $points = 0;
+                $reason = 'Task completed exactly on expected date';
+
+                if ($diffInHours < 0) {
+                    // Completed early → reward
+                    $points = abs($diffInHours);
+                    $reason = 'Task completed before expected date';
+                } elseif ($diffInHours > 0) {
+                    // Completed late → penalty
+                    $points = -$diffInHours;
+                    $reason = 'Task completed after expected date';
+                }
+
+                // Always create or get the monthly point record
+                $userPoint = UserPoint::firstOrCreate(
+                    [
+                        'user_id' => $task->user_id,
+                        'month' => now()->format('Y-m-01'),
+                    ],
+                    [
+                        'points' => 0,
+                    ]
+                );
+
+                // Apply point change only if non-zero
+                if ($points > 0) {
+                    $userPoint->increment('points', $points);
+                } elseif ($points < 0) {
+                    $userPoint->decrement('points', abs($points));
+                }
+
+                // Log to point history regardless of point amount (optional: skip if 0)
+                $userPoint->histories()->create([
+                    'task_id' => $task->id,
+                    'points' => $points,
+                    'reason' => $reason,
+                ]);
+            }
+        }
+
+
         return response()->json(['message' => 'Task status updated successfully.']);
+    }
+
+
+    // user points update section
+    public function adjustPoints(Request $request, Task $task)
+    {
+        $request->validate([
+            'points' => 'required|integer',
+            'reason' => 'required|string|max:255',
+            'adjust_type' => 'required|in:increment,decrement',
+        ]);
+
+        $points = $request->input('points');
+        $reason = $request->input('reason');
+        $adjustType = $request->input('adjust_type');
+        $userPoint = UserPoint::firstOrCreate(
+            [
+                'user_id' => $task->user_id,
+                'month' => now()->format('Y-m-01'),
+            ],
+            [
+                'points' => 0,
+            ]
+        );
+        // Adjust points based on type
+        if ($adjustType === 'increment') {
+            $userPoint->increment('points', $points);
+        } elseif ($adjustType === 'decrement') {
+            $userPoint->decrement('points', $points);
+        }
+        // Log the point history
+        $userPoint->histories()->create([
+            'task_id' => $task->id,
+            'points' => $points,
+            'reason' => $reason,
+        ]); 
+        
+        return redirect()->route('tasks.show', $task->id)
+            ->with('success', 'Points adjusted successfully.');
+
     }
 }

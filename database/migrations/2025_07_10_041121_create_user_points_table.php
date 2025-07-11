@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->integer('points')->default(0);
-            $table->date('month')->nullable();
+            $table->date('month');
             $table->timestamps();
+
+            $table->unique(['user_id', 'month']);
         });
     }
 

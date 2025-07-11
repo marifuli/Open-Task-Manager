@@ -96,4 +96,9 @@ class User extends Authenticatable
         return $this->is_admin ?? false;
     }
 
+    public function point()
+    {
+        return $this->hasMany(UserPoint::class);
+    }
+
 }

@@ -39,6 +39,11 @@
                                     data-bs-target="#editTaskModal"> <i class="bi bi-pencil-square"></i> </button>
                                 <a href="{{ route('projects.tasks.index', $task->project->id) }}" class="btn btn-secondary">
                                     <i class="bi bi-arrow-90deg-left"></i> </a>
+                                <!-- Adjust Points Button -->
+                                <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                    data-bs-target="#adjustPointsModal">
+                                    <i class="bi bi-coin"></i>
+                                </button>
                             </div>
 
                             <div class="col-md-6 border-start">
@@ -52,6 +57,8 @@
                                                 class="bi bi-pause-fill"></i></button>
                                         <button id="reset-btn" class="btn btn-danger btn-sm"><i
                                                 class="bi bi-stop-fill"></i></button>
+
+
                                     </div>
                                 </div>
                             </div>
@@ -134,6 +141,49 @@
             </div>
         </div>
 
+        <!-- Adjust Points Modal -->
+        <div class="modal fade" id="adjustPointsModal" tabindex="-1" aria-labelledby="adjustPointsModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="adjust-points-form" action="" method="POST">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="adjustPointsModalLabel">Adjust Task Points</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="point_value" class="form-label">Points</label>
+                                <input type="number" name="point_value" id="point_value" class="form-control"
+                                    min="1" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="adjust_type" class="form-label">Action</label>
+                                <select name="adjust_type" id="adjust_type" class="form-select" required>
+                                    <option value="increment">Increment</option>
+                                    <option value="decrement">Decrement</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="reason" class="form-label">Reason</label>
+                                <textarea name="reason" id="reason" class="form-control" rows="3" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Adjust</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
         <!-- Add Checklist Modal -->
         <div class="modal fade" id="addChecklistModal" tabindex="-1" aria-labelledby="addChecklistModalLabel"
             aria-hidden="true">
@@ -143,7 +193,8 @@
                         @csrf
                         <div class="modal-header">
                             <h5 class="modal-title" id="addChecklistModalLabel">Add Checklist Item</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div class="mb-3">
@@ -199,7 +250,7 @@
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
-                             <div class="mb-3">
+                            <div class="mb-3">
                                 <label for="expected_completion_date" class="form-label">Expected Date</label>
                                 <input type="date" name="expected_completion_date" id="expected_completion_date"
                                     class="form-control" value="{{ $task->expected_completion_date }}">
@@ -223,7 +274,8 @@
                                 <label for="task_status_id" class="form-label">Status</label>
                                 <select name="task_status_id" id="task_status_id" class="form-select" required>
                                     @foreach ($statuses as $status)
-                                        <option value="{{ $status->id }}" {{ $task->taskStatus->id == $status->id ? 'selected' : '' }}>
+                                        <option value="{{ $status->id }}"
+                                            {{ $task->taskStatus->id == $status->id ? 'selected' : '' }}>
                                             {{ $status->name }}
                                         </option>
                                     @endforeach

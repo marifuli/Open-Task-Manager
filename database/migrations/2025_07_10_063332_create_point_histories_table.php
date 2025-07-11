@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('point_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_point_id')->constrained()->onDelete('cascade'); // Assuming points are related to a user point record
             $table->foreignId('task_id')->nullable()->constrained()->onDelete('set null'); // Optional, if points are related to a specific task
             $table->integer('points')->default(0);
             $table->string('reason'); // e.g., 'Task completed', 'Bonus points', etc.
