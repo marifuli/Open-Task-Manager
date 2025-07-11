@@ -119,7 +119,7 @@ class TaskController extends Controller
         }
 
         // dd($task->task_status_id);
-        if ($task->task_status_id == 11) {
+        if ($task->task_status_id == 9) {
             $currentDate = now();
 
             $expectedCompletionDate = $task->expected_completion_date
@@ -178,15 +178,12 @@ class TaskController extends Controller
     // user points update section
     public function adjustPoints(Request $request, Task $task)
     {
-        $request->validate([
+        $formData = $request->validate([
             'points' => 'required|integer',
             'reason' => 'required|string|max:255',
             'adjust_type' => 'required|in:increment,decrement',
         ]);
 
-        $points = $request->input('points');
-        $reason = $request->input('reason');
-        $adjustType = $request->input('adjust_type');
         $userPoint = UserPoint::firstOrCreate(
             [
                 'user_id' => $task->user_id,
@@ -196,21 +193,22 @@ class TaskController extends Controller
                 'points' => 0,
             ]
         );
-        // Adjust points based on type
-        if ($adjustType === 'increment') {
-            $userPoint->increment('points', $points);
-        } elseif ($adjustType === 'decrement') {
-            $userPoint->decrement('points', $points);
+
+        // Adjust points based on the type
+        if ($formData['adjust_type'] === 'increment') {
+            $userPoint->increment('points', $formData['points']);
+        } else {
+            $userPoint->decrement('points', $formData['points']);
         }
-        // Log the point history
+
+        // Log the point adjustment
         $userPoint->histories()->create([
             'task_id' => $task->id,
-            'points' => $points,
-            'reason' => $reason,
-        ]); 
-        
+            'points' => $formData['points'],
+            'reason' => $formData['reason'],
+        ]);
+
         return redirect()->route('tasks.show', $task->id)
             ->with('success', 'Points adjusted successfully.');
-
     }
 }

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title')
-    Projects 
+    Projects
 @endsection
 
 @section('content')
@@ -12,7 +12,7 @@
             </a>
         </div>
 
-        @if(session('success'))
+        @if (session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
             </div>
@@ -28,7 +28,8 @@
 
                             <div class="mb-2">
                                 <strong>Status:</strong>
-                                <span class="badge 
+                                <span
+                                    class="badge 
                                     {{ $project->status === 'pending' ? 'bg-secondary' : ($project->status === 'on_going' ? 'bg-warning text-dark' : 'bg-success') }}">
                                     {{ ucfirst(str_replace('_', ' ', $project->status)) }}
                                 </span>
@@ -36,7 +37,7 @@
 
                             <div class="mb-3">
                                 <strong>Deadline:</strong>
-                                @if($project->end_date && $project->end_date->isFuture())
+                                @if ($project->end_date && $project->end_date->isFuture())
                                     <span class="text-success">{{ $project->end_date->diffForHumans() }}</span>
                                 @else
                                     <span class="text-danger">Deadline Passed</span>
@@ -45,19 +46,27 @@
 
                             <div class="mt-auto">
                                 <div class="d-flex flex-wrap gap-2">
-                                    <a href="{{ route('projects.tasks.index', $project->id) }}" class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-kanban-fill me-1"></i> Manage Tasks
-                                    </a>
-                                    <a href="{{ route('projects.show', $project->id) }}" class="btn btn-sm btn-outline-info w-100 d-flex align-items-center justify-content-center">
+                                    @if ($project->status == 'in_progress')
+                                        <a href="{{ route('projects.tasks.index', $project->id) }}"
+                                            class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-kanban-fill me-1"></i> Manage Tasks
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('projects.show', $project->id) }}"
+                                        class="btn btn-sm btn-outline-info w-100 d-flex align-items-center justify-content-center">
                                         <i class="bi bi-eye me-1"></i> View
                                     </a>
-                                    <a href="{{ route('projects.edit', $project->id) }}" class="btn btn-sm btn-outline-warning w-100 d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('projects.edit', $project->id) }}"
+                                        class="btn btn-sm btn-outline-warning w-100 d-flex align-items-center justify-content-center">
                                         <i class="bi bi-pencil-square me-1"></i> Edit
                                     </a>
-                                    <form action="{{ route('projects.destroy', $project->id) }}" method="POST" class="w-100">
+                                    <form action="{{ route('projects.destroy', $project->id) }}" method="POST"
+                                        class="w-100">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center" onclick="return confirm('Are you sure you want to delete this project?')">
+                                        <button type="submit"
+                                            class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center"
+                                            onclick="return confirm('Are you sure you want to delete this project?')">
                                             <i class="bi bi-trash me-1"></i> Delete
                                         </button>
                                     </form>

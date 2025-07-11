@@ -146,7 +146,7 @@
             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form id="adjust-points-form" action="" method="POST">
+                    <form id="adjust-points-form" action="{{ route('tasks.adjustPoints', $task->id) }}" method="POST">
                         @csrf
                         <div class="modal-header">
                             <h5 class="modal-title" id="adjustPointsModalLabel">Adjust Task Points</h5>
@@ -155,8 +155,8 @@
 
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label for="point_value" class="form-label">Points</label>
-                                <input type="number" name="point_value" id="point_value" class="form-control"
+                                <label for="points" class="form-label">Points</label>
+                                <input type="number" name="points" id="points" class="form-control"
                                     min="1" required>
                             </div>
 

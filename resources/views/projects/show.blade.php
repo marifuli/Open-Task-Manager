@@ -22,7 +22,7 @@
                         <p class="card-text"><strong>End Date:</strong>
                             {{ \Carbon\Carbon::parse($project->end_date)->format('Y-m-d') }}</p>
                         <p class="card-text"><strong>Status:</strong>
-                            {{ $project->status == 'pending' ? 'Pending' : ($project->status == 'on_going' ? 'In Progress' : 'Completed') }}
+                            {{ $project->status == 'pending' ? 'Pending' : ($project->status == 'in_progress' ? 'In Progress' : 'Completed') }}
                         </p>
                         <p class="card-text"><strong>Budget:</strong> ${{ $project->budget }}</p>
 

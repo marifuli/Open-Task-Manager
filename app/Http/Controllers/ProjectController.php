@@ -46,6 +46,7 @@ class ProjectController extends Controller
 
     public function show(Project $project)
     {
+        // dd($project->status);
         $teamMembers = $project->users()->get();
         $users = User::all();
         return view('projects.show', compact('project', 'teamMembers', 'users'));
