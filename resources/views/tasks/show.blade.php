@@ -251,7 +251,7 @@
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label for="expected_completion_date" class="form-label">Expected Date</label>
+                                <label for="expected_completion_date" class="form-label">Hidden Date</label>
                                 <input type="date" name="expected_completion_date" id="expected_completion_date"
                                     class="form-control" value="{{ $task->expected_completion_date }}">
                                 @error('expected_completion_date')

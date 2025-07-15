@@ -21,4 +21,9 @@ class PointHistory extends Model
     {
         return $this->belongsTo(UserPoint::class);
     }
+
+    public function task()
+    {
+        return $this->belongsTo(Task::class);
+    }
 }

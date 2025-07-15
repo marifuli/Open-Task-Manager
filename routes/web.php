@@ -10,6 +10,7 @@ use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserPointController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -33,7 +34,12 @@ Route::middleware(['auth'])->group(function () {
     Route::put('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::post('tasks/{task}/update-status', [TaskController::class, 'updateStatus']);
     Route::post('tasks/{task}/adjust-points', [TaskController::class, 'adjustPoints'])->name('tasks.adjustPoints');
+
+    // Point History
+    Route::get('points-history', [UserPointController::class, 'index'])->name('points.histories.index');
+    Route::get('points-history/{userPoint}/histories', [UserPointController::class, 'show'])->name('points.histories.show');
     
+
     Route::resource('routines', RoutineController::class)->except(['show']);
     Route::get('routines/showAll', [RoutineController::class, 'showAll'])->name('routines.showAll');
     Route::get('routines/daily', [RoutineController::class, 'showDaily'])->name('routines.showDaily');

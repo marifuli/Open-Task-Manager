@@ -19,4 +19,10 @@ class UserPoint extends Model
     {
         return $this->hasMany(PointHistory::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

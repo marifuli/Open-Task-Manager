@@ -46,12 +46,10 @@
 
                             <div class="mt-auto">
                                 <div class="d-flex flex-wrap gap-2">
-                                    @if ($project->status == 'in_progress')
-                                        <a href="{{ route('projects.tasks.index', $project->id) }}"
-                                            class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-                                            <i class="bi bi-kanban-fill me-1"></i> Manage Tasks
-                                        </a>
-                                    @endif
+                                    <a href="{{ route('projects.tasks.index', $project->id) }}"
+                                        class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-kanban-fill me-1"></i> Manage Tasks
+                                    </a>
                                     <a href="{{ route('projects.show', $project->id) }}"
                                         class="btn btn-sm btn-outline-info w-100 d-flex align-items-center justify-content-center">
                                         <i class="bi bi-eye me-1"></i> View

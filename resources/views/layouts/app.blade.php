@@ -158,6 +158,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link {{ request()->is('points*') ? 'active' : '' }}" href="{{ route('points.histories.index') }}">
+                    <i class="bi bi-star"></i> User Points
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link {{ request()->is('files*') ? 'active' : '' }}" href="{{ route('files.index') }}">
                     <i class="bi bi-file"></i> Files
                 </a>
